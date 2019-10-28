@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>New Flexmonster Test</title>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="node_modules/pickout/dist/pickout.min.css">
+
+    <!-- Custom CSS -->
+    <style>
+
+        button {
+            width: 100px;
+            height: 50px;
+        }
+
+        #pivotContainer {
+            margin-top: 5%;
+        }
+
+        .country {
+            width: 100px;
+        }
+
+        .popup {
+            background-color: white;
+            color: black;
+            width: 500px;
+            height: 500px;
+            position: fixed;
+            top: 50%;
+            margin: auto;
+            text-align: center;
+            z-index: 1;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Layout -->
+
+    <!-- PowerApp Embedded 
+    <iframe height="500px" width="500px" src="https://apps.powerapps.com/play/bf22c68e-4df4-4a33-b4a5-dab41d6447b1?tenantId=d52c9ea1-7c21-47b1-82a3-33a74b1f74b8" frameborder="0"></iframe>
+    -->
+
+    <!-- Pickout CSS 
+    <div class="form-group">
+        <label for="option">Option:</label>
+        <div class="pk-form">
+            <select name="option" id="option" class="option all" placeholder="Select a option">
+                <option value=""></option>
+                <option value="opt1">Option 1</option>
+                <option value="opt2">Option 2</option>
+                <option value="opt3">Option 3</option>
+                <option value="opt4">Option 4</option>
+            </select>     
+        </div>  
+    </div>
+    -->
+
+    <!-- Option group -->
+    <div class="form-group">
+        <label for="country">Set filter:</label>
+        <div class="pk-form">
+            <select name="country" id="country" class="country all" placeholder="Set filter">
+                <!--
+                <option value=""></option>
+                <optgroup label="America">
+                    <option value="EUA">EUA</option>
+                    <option value="Brazil">Brazil</option>
+                    <option value="Canada">Canada</option>                      
+                </optgroup>
+                <optgroup label="Europe">
+                    <option value="Ireland">Ireland</option>
+                    <option value="Spanish">Spanish</option>
+                    <option value="Italy">Italy</option>
+                    <option value="Portugal">Portugal</option>              
+                </optgroup>
+                -->
+            </select>
+        </div>           
+    </div>
+
+    <!-- Save filter -->
+    <button onclick="openForm()">OPEN</button>
+
+    <button onclick="newPivot()">NEW</button>
+    <button onclick="getColumns()">COLUMNS</button>
+
+    <!-- GET SET RUN -->
+    <button onclick="getReport()">GET</button>
+    <button onclick="setReport()">SET</button>
+    <button onclick="runReport()">RUN</button>
+
+    <button onclick="setGridFlat()">GO FLAT</button>
+
+    <div id="hideform" style="display: none;">
+        <input id="targetName" type="text">
+        <button onclick="submitForm()">Save target</button>
+    </div>
+
+    <!-- Imposta filtro -->
+    <!--
+    <div id="setfilter" class="btn-group"></div>
+    
+    <button onclick="setFilterUomo()">SOLOMAN</button>
+    <button onclick="setFilterDonna()">SOLODON</button>
+    <button onclick="removeFilterSex()">CLEAR</button>
+    <button onclick="setFilterAge()">18-24</button>
+    <button onclick="useFilterName()">CUSTOM</button>
+    -->
+
+    <button onclick="getAll()">ALL</button>
+
+    <div id="pivotContainer">The component will appear here</div>
+    <div id="newPivotContainer">The new component will appear here</div>
+
+    <!-- Flexmonster -->
+    <script src="node_modules/flexmonster/flexmonster.js"></script>
+
+    <!-- Pickout JS -->
+    <script src="node_modules/pickout/dist/pickout.min.js"></script>
+
+    <script>
+
+        const getAll = () => {
+            var columns = flexmonster.getAllHierarchies();
+            for ( obj in columns ) {
+                var nameColumn = columns[obj].caption;
+                var rows = flexmonster.getMembers(nameColumn);
+                if ( nameColumn !== "Id" ) {
+                    document.getElementById("country").innerHTML +=
+                    "<optgroup id=\"" + nameColumn + "\" label=\"" + nameColumn + "\">" + nameColumn + "</optgroup>";
+                    for ( val in rows ) {
+                        var nameValue = rows[val].caption;
+                        document.getElementById(nameColumn).innerHTML +=
+                        "<option value=\"" + nameValue + "\">" + nameValue + "</option>";
+                    }
+                }
+            }
+        }
+        
+        /*
+        pickout.to('.option');
+        pickout.updated('.option');
+        */
+        pickout.to('.country');
+
+    </script>
+
+    <script>
+
+        //Get report > Set report > Run query
+
+        var report = []
+        function getReport() {
+            report = pivot.getReport();
+            console.log(report);
+        }
+
+        function setReport() {
+            newPivot.setReport(report);
+        }
+
+        function runReport() {
+            var slice =  {
+                rows: [],
+                columns: report["slice"].columns,
+                measures: report["slice"].measures
+            };
+            flexmonster.runQuery(slice);
+        }
+
+        
+        //Custom functions
+        var allFilters = [];
+
+        var saveTarget = function() {
+                console.log("Pazzesco");
+        }
+
+        var columns = [];
+        var getColumns = function() {
+            columns = flexmonster.getColumns();
+        }
+
+        var newPivot = function() { 
+            new Flexmonster({
+                container: "newPivotContainer",
+                componentFolder: "node_modules/flexmonster/",
+                toolbar: true,
+                licenseKey: 'Z7YB-XD3I5A-1K692Y-491E10',
+
+                //Report definition
+                report: {
+			
+                //Data source
+                dataSource: {
+                    filename: "subset.CSV",
+                    
+                    //Report structure
+                    slice: {
+                        rows: [
+
+                        ],
+                        columns: [
+                            {uniqueName: "Sesso"}
+                        ],
+                        measures: [
+
+                        ]
+                    }   
+                }
+            }
+            });
+        }
+
+
+        /*
+        const getAll = () => {
+            var columns = flexmonster.getAllHierarchies();
+                for (obj in columns) {
+                    var nameColumn = columns[obj].caption;
+                    var rows = flexmonster.getMembers(nameColumn);
+                    if ( nameColumn !== 'Id') {
+                        document.getElementById('setfilter').innerHTML +=
+                        "<div class=\"dropdown\"><button class=\"btn btn-secondary dropdown-toggle\" type=\"button\" id=\"column\">" + nameColumn + "<div class=\"dropdown-menu\" aria-labelledby=\"column\" id=\"setvalue-" + nameColumn + "\"></div></button></div>";
+                        for (val in rows) {
+                            var nameValue = rows[val].caption;
+                            console.log(document.getElementById("setvalue-" + nameColumn ).innerHTML +=
+                            "<button class=\"dropdown-item\" type=\"button\" id=\"value\" onClick=\"setFilterName()\">" + nameValue + "</button>");
+                        }
+                    }   
+                }
+        }
+        */
+
+        var filterName = '';
+        const setFilterName = () => {
+            filterName = document.getSelection().text;
+            console.log(filterName);
+        }
+
+        const useFilterName = () => {
+            flexmonster.setFilter(filterName,{
+                "members": []
+            });
+        }
+
+        //FILTER DATA TEST
+        const setFilterUomo = () => {
+            flexmonster.setFilter("Sesso", {
+                    "members": ["Sesso.[1]"]
+                });
+        }
+
+        const setFilterDonna = () => {
+            flexmonster.setFilter("Sesso", {
+                    "members": ["Sesso.[2]"]
+                });
+        }
+
+        const removeFilterSex = () => {
+            flexmonster.clearFilter("Sesso");
+        }
+
+        const setFilterAge = () => {
+            flexmonster.setFilter("Eta", {
+                    "query": { "between": [18, 24] }
+                });
+        }
+
+        /*
+        //FILTER DATA ESPLOSO
+        const setFilterUomo = () => {
+            flexmonster.setFilter("Uomo", {
+                    "members": ["Uomo.[1]"]
+                });
+        }
+
+        const setFilterDonna = () => {
+            flexmonster.setFilter("Uomo", {
+                    "members": ["Uomo.[0]"]
+                });
+        }
+        */
+
+        //Set grid option
+        
+        var i = 0;
+        const setGridFlat = () => {
+            if (i===0) {
+                flexmonster.setOptions({
+                    grid: {
+                        type: 'flat'
+                    }
+                });
+                i = 1;
+            } else  {
+                flexmonster.setOptions({
+                    grid: {
+                        type: 'compact'
+                    }
+                });
+                i = 0;
+            }
+            flexmonster.refresh();
+        }
+
+        var pivot = new Flexmonster({
+            container: "pivotContainer",
+            componentFolder: "node_modules/flexmonster/",
+            toolbar: true,
+            licenseKey: 'Z7YB-XD3I5A-1K692Y-491E10',
+            beforetoolbarcreated: customizeToolbar,
+
+            //Report definition
+
+            report: {
+			
+                //Data source
+                dataSource: {
+                    filename: "subset.CSV",
+                    
+                    /*
+                    //Mapping DATA TEST
+                    mapping: {
+                        "Id": {
+                            dimensionUniqueName: "ID"
+                        },
+                        "Sesso": {
+                            dimensionUniqueName: "Anagrafica"
+                        },
+                        "Studio": {
+                            dimensionUniqueName: "Anagrafica"
+                        },
+                        "Famiglia": {
+                            dimensionUniqueName: "Anagrafica"
+                        },
+                        "Eta": {
+                            dimensionUniqueName: "Anagrafica"
+                        }
+                    }
+                    */
+
+                    /*
+                    //Mapping DATA ESPLOSO
+                    mapping: {
+                        "Id": {
+                            caption: "Identificativo"
+                        },
+                        "Uomo": {
+                            dimensionUniqueName: "Sesso"
+                        },
+                        "Donna": {
+                            dimensionUniqueName: "Sesso"
+                        },
+                        "Nessuna Scuola": {
+                            dimensionUniqueName: "Istruzione"
+                        },
+                        "Scuola Elementare NC": {
+                            dimensionUniqueName: "Istruzione"
+                        },
+                        "Scuola Elementare": {
+                            dimensionUniqueName: "Istruzione"
+                        },
+                        "Scuola Media NC": {
+                            dimensionUniqueName: "Istruzione"
+                        },
+                        "Scuola Media": {
+                            dimensionUniqueName: "Istruzione"
+                        },
+                        "Scuola Superiore NC": {
+                            dimensionUniqueName: "Istruzione"
+                        },
+                        "Scuola Superiore": {
+                            dimensionUniqueName: "Istruzione"
+                        },
+                        "Laureando": {
+                            dimensionUniqueName: "Istruzione"
+                        },
+                        "Laurea Triennale": {
+                            dimensionUniqueName: "Istruzione"
+                        },
+                        "Laurea Magistrale": {
+                            dimensionUniqueName: "Istruzione"
+                        },
+                        "Giallo": {
+                            dimensionUniqueName: "Colore"
+                        },
+                        "Verde": {
+                            dimensionUniqueName: "Colore"
+                        },
+                        "Rosso": {
+                            dimensionUniqueName: "Colore"
+                        }
+                    },
+                    */
+
+                },
+
+                /*
+                //Report structure DATA ESPLOSO
+                slice: {
+                    rows: [
+                        {uniqueName: "Uomo"}
+                    ],
+                    columns: [
+                        {uniqueName: "Nessuna Scuola"}
+                    ],
+                    measures: [
+                        {uniqueName: "Id", aggregation: "count"}
+                    ]
+                },
+                */
+
+                //Report structure DATA TEST
+                slice: {
+                    rows: [
+                        {uniqueName: "Sesso"}
+                    ],
+                    columns: [
+                        {uniqueName: "Eta"}
+                    ],
+                    measures: [
+                        {uniqueName: "Id", aggregation: "count"}
+                    ]
+                },
+
+                //Report options
+                options: {
+                    grid: {
+                        type: 'classic'
+                    }
+                }
+            },
+        });
+
+        function customizeToolbar(toolbar) {
+
+            var tabs = toolbar.getTabs();
+            toolbar.getTabs = function () {
+
+                var titles = ["Connect","Save","Export","Grid","Charts","Format","Options","Fullscreen"];
+                
+                for (obj in tabs) {
+                    if (titles.indexOf(tabs[obj].title) !== -1) {
+                        delete tabs[obj];
+                    }
+                }
+                
+                // add new tab
+                tabs.unshift({
+                    id: "fm-tab-newtab",
+                    title: "New Tab",
+                    handler: newtabHandler,
+                    icon: this.icons.open
+                });
+                tabs.unshift({
+                    id: "fm-tab-newtab",
+                    title: "Targets",
+                    handler: newtabTarget,
+                    icon: this.icons.open
+                });
+                tabs.unshift({
+                    id: "fm-tab-newtab",
+                    title: "Popup",
+                    handler: popupElement,
+                    icon: this.icons.open
+                });
+                return tabs;
+            }
+
+            var newtabHandler = function() {
+                // add new functionality
+                //document.getElementById('country').click();
+                var columns = flexmonster.getAllHierarchies();
+                for ( obj in columns ) {
+                    filter = [];
+                    var nameColumn = columns[obj].caption;
+                    members = flexmonster.getFilter(nameColumn);
+                    if ( members !== null ) {
+                        filter.push(nameColumn, members);
+                        allFilters.push(filter);
+                        openForm();
+                    }
+                }
+            } 
+
+            var openForm = function() {
+                var status = document.getElementById("hideform").style.display;
+                if ( status === 'none' ) {
+                    document.getElementById("hideform").style.display = "block";
+                } else {
+                    document.getElementById("hideform").style.display = "none";
+                }
+            }
+
+            var popupElement = function() {
+                var div = document.createElement("div");
+                div.className = "popup";
+                var popup = document.createElement("p");          
+                popup.innerText = "Popup element!";
+                var button = document.createElement("button");
+                button.setAttribute("onclick","saveTarget()");
+                document.body.appendChild(div).appendChild(popup).appendChild(button); 
+            }
+
+            var newtabTarget = function() {
+                //console.log("Il campo è " + allFilters[0][0] + ", mentre il valore è " + allFilters[0][1].members);
+                //flexmonster.setFilter(allFilters[0][0],allFilters[0][1]);
+                console.log(allFilters);
+            } 
+
+        }
+
+        var target = [];
+        var submitForm = function() {
+            target.push([document.getElementById("targetName").value,allFilters]);
+            allFilter = [];
+            console.log(target);
+        }
+
+    </script>
+
+</body>
+</html>
